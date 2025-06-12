@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package auth;
+
+service AuthService {
+  rpc GGLogin(GGLoginRequest) returns (GGLoginResponse);
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  bool isAdmin = 3;
+}
+
+message GGLoginRequest {
+  string code = 1;
+}
+
+message GGLoginResponse {
+  string accessToken = 1;
+  User user = 2;
+}

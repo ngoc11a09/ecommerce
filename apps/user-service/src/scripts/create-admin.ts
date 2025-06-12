@@ -1,9 +1,7 @@
 import { UserServiceService } from '../user-service.service';
-import { Role } from '@app/common/constants/roles.constant';
 import * as bcrypt from 'bcrypt';
 import { UserServiceModule } from '../user-service.module';
 import { NestFactory } from '@nestjs/core';
-import { randomUUID } from 'crypto';
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(UserServiceModule);
 
@@ -11,9 +9,8 @@ async function bootstrap() {
 
   const email = process.env.ADMIN_EMAIL || 'admin@admin.com';
   const password = process.env.ADMIN_PASSWORD || '123456';
-  const name = process.env.ADMIN_NAME || 'Super Admin';
 
-  const exists = await userService.findByEmail(email);
+  const exists = await userService.findOneBy({ email });
   if (exists) {
     console.log('Error: Admin already exists');
     return process.exit(0);
@@ -21,12 +18,10 @@ async function bootstrap() {
 
   const hash = await bcrypt.hash(password, 10);
 
-  const newAdmin = await userService.create({
-    id: randomUUID(),
+  const newAdmin = await userService.createAdmin({
     email,
     password: hash,
-    name,
-    roles: [Role.ADMIN],
+    isAdmin: true,
   });
 
   console.log('Admin created:', newAdmin.email);

@@ -1,27 +1,43 @@
-import { Role } from '@app/common';
 import { UUID } from 'crypto';
-import { Entity, Column, PrimaryColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { SocialAccount } from './social-acc.entity';
 
 @Entity()
 export class User {
-  @PrimaryColumn('uuid')
+  @PrimaryGeneratedColumn('uuid')
   id: UUID;
 
   @Column({ unique: true, nullable: false })
   email: string;
 
   @Column({ nullable: false })
-  name: string;
-
-  @Column({ default: 'fW3pDxx@>', nullable: false })
   password: string;
 
-  @Column({ type: 'enum', enum: Role, default: [Role.USER], nullable: false })
-  roles: Role[];
+  @Column({ default: false, nullable: false })
+  isAdmin: boolean;
 
-  @Column({ nullable: true })
-  picture: string;
+  @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user, { cascade: true })
+  socialAccounts: SocialAccount[];
 
-  @Column({ unique: true, nullable: true })
-  googleId: string;
+  connectSocialAccount({
+    provider,
+    metadata,
+  }: {
+    provider: string;
+    metadata: any;
+  }) {
+    const isExist = this.socialAccounts?.find((acc) => acc.provider === provider);
+    if (isExist) {
+      throw new Error('SOCIAL_ACCOUNT_ALREADY_EXISTS');
+    } else {
+      const newAccount = new SocialAccount();
+      newAccount.provider = provider;
+      newAccount.metadata = metadata;
+      newAccount.user = this;
+
+      if (!this.socialAccounts) this.socialAccounts = [];
+      this.socialAccounts.push(newAccount);
+    }
+
+  }
 }

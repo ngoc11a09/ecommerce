@@ -13,6 +13,8 @@ import { PassportModule } from '@nestjs/passport';
 import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { KafkaModule } from '@app/common';
+
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -64,4 +66,4 @@ import { KafkaModule } from '@app/common';
     JwtAuthGuard,
   ],
 })
-export class AuthServiceModule {}
+export class AuthServiceModule { }

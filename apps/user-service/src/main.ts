@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { UserServiceModule } from './user-service.module';
-import { MicroserviceOptions, TcpStatus } from '@nestjs/microservices';
+import { MicroserviceOptions } from '@nestjs/microservices';
 import { Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
+import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(UserServiceModule);
   const configService = app.get(ConfigService);
 
-  const server = app.connectMicroservice<MicroserviceOptions>({
+  app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: {
@@ -20,11 +21,16 @@ async function bootstrap() {
     },
   });
 
-  server.status.subscribe((status: TcpStatus) => {
-    console.log(status);
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: 'user',
+      protoPath: join(process.cwd(), 'apps/user-service/proto/user.proto'),
+      url: '0.0.0.0:50051',
+    },
   });
 
   await app.startAllMicroservices();
-  await app.listen(process.env.port ?? 3000);
+  await app.listen(process.env.port ?? 3002);
 }
 bootstrap();

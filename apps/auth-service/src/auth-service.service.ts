@@ -5,41 +5,69 @@ import { User } from '@app/common';
 import { randomUUID } from 'crypto';
 import { firstValueFrom } from 'rxjs';
 import * as bcrypt from 'bcrypt';
+import { OAuth2Client } from 'google-auth-library';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class AuthServiceService {
-  constructor(
-    @Inject('KAFKA_SERVICE') private readonly kafkaClient: ClientKafka,
+export class AuthServiceService implements OnModuleInit {
+  private readonly ggClient: OAuth2Client;
 
-    private jwtService: JwtService,
-  ) {}
+  constructor(
+    @Inject('AUTH_SERVICE') private readonly kafkaClient: ClientKafka,
+    private readonly configService: ConfigService,
+    private readonly jwtService: JwtService,
+  ) {
+    this.ggClient = new OAuth2Client(this.configService.get('GOOGLE_CLIENT_ID'));
+  }
 
   async onModuleInit() {
     this.kafkaClient.subscribeToResponseOf('find_one_by');
+    this.kafkaClient.subscribeToResponseOf('user_created');
+    this.kafkaClient.subscribeToResponseOf('connect_social_account');
     await this.kafkaClient.connect();
   }
 
-  async loginWithGoogle(user: any) {
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const payload: any = this.getPayloadToken(user);
-
-    this.kafkaClient.emit('user_created', { id: payload.id, ...user });
-
+  getPayload(user: User) {
     return {
-      access_token: this.jwtService.sign(payload),
-      user: { id: payload.id, ...user },
+      id: user.id,
+      email: user.email,
+      isAdmin: user.isAdmin,
     };
   }
 
-  private getPayloadToken(user: any): any {
+  async loginWithGoogle(ggUser) {
+    if (!ggUser) {
+      throw new Error('User not found');
+    }
+
+    const data = await firstValueFrom(
+      this.kafkaClient.send('find_one_by', { email: ggUser.email }),
+    );
+
+    if (data) {
+      return {
+        access_token: this.jwtService.sign(this.getPayload(data)),
+        user: this.getPayload(data)
+      };
+    }
+
+    console.log("GG USER", { ggUser, data });
+
+    //chua dang ky google
+    const user = await firstValueFrom(this.kafkaClient.send('user_created', { email: ggUser.email }));
+    await firstValueFrom(this.kafkaClient.send('connect_social_account', {
+      user: user,
+      provider: 'google',
+      metadata: {
+        ggUser,
+      },
+    }));
+
+    const payload = this.getPayload(user);
+
     return {
-      id: user.id || randomUUID(),
-      email: user.email,
-      roles: user.roles,
-      isConnectedGoogle: !!user.googleId,
+      access_token: this.jwtService.sign(payload),
+      user: payload
     };
   }
 
@@ -66,9 +94,11 @@ export class AuthServiceService {
       throw new Error('Invalid credentials');
     }
 
+    const payload = this.getPayload(user);
+
     return {
-      access_token: this.jwtService.sign(this.getPayloadToken(user)),
-      user,
+      access_token: this.jwtService.sign(payload),
+      user: payload
     };
   }
 }

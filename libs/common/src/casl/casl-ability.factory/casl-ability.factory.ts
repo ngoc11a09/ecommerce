@@ -17,7 +17,7 @@ export class CaslAbilityFactory {
   createForUser(user: User) {
     const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
 
-    if (user?.roles.includes(Role.ADMIN)) {
+    if (user?.isAdmin) {
       can(Action.Manage, 'all');
     } else {
       can(Action.Read, 'all');

@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { CaslModule } from '@app/common/casl/casl.module';
 import { CaslAbilityFactory, PoliciesGuard } from '@app/common';
+import { SocialAccount } from './entities/social-acc.entity';
 
 @Module({
   imports: [
@@ -21,12 +22,12 @@ import { CaslAbilityFactory, PoliciesGuard } from '@app/common';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User],
+      entities: [User, SocialAccount],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, SocialAccount]),
   ],
   controllers: [UserServiceController],
   providers: [UserServiceService, CaslAbilityFactory, PoliciesGuard],
 })
-export class UserServiceModule {}
+export class UserServiceModule { }

@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsUrl, IsUUID } from 'class-validator';
+import { IsBoolean, IsEmail, IsString, IsUrl, IsUUID } from 'class-validator';
 import { UUID } from 'crypto';
 
 export class GoogleUserDto {
@@ -8,12 +8,21 @@ export class GoogleUserDto {
   @IsEmail()
   email: string;
 
+  @IsBoolean()
+  verified_email: boolean;
+
   @IsString()
   name: string;
+
+  @IsString()
+  given_name: string;
+
+  @IsString()
+  family_name: string;
 
   @IsUrl()
   picture: string;
 
   @IsString()
-  googleId: string;
+  hd: string;
 }
