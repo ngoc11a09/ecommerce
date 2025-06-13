@@ -57,7 +57,6 @@ export class AuthController {
     const result = await lastValueFrom(
       this.authServiceGrpc.GGLogin({ code }),
     );
-    console.log({ result });
     res.json({ access_token: result.accessToken?.toString(), user: result.user });
     return;
   }

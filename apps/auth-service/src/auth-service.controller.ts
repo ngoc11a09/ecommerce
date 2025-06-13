@@ -33,7 +33,6 @@ export class AuthServiceController {
     const response = await oauth2.userinfo.get();
 
     const res = await this.authService.loginWithGoogle(response.data);
-    console.log({ res });
 
     return {
       accessToken: res.access_token,

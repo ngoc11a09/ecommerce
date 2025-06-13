@@ -51,9 +51,6 @@ export class AuthServiceService implements OnModuleInit {
       };
     }
 
-    console.log("GG USER", { ggUser, data });
-
-    //chua dang ky google
     const user = await firstValueFrom(this.kafkaClient.send('user_created', { email: ggUser.email }));
     await firstValueFrom(this.kafkaClient.send('connect_social_account', {
       user: user,
