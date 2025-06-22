@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package shop;
+
+service ShopService {
+    rpc CreateShop(CreateShopRequest) returns (Shop);
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  bool isAdmin = 3;
+}
+
+message Shop {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string phone = 4;
+    string description = 5;
+}
+
+message CreateShopRequest {
+    Shop shop = 1;
+    User user = 2;
+}

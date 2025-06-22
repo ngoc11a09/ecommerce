@@ -23,7 +23,13 @@
       ],
       "@app/common/*": [
         "libs/common/src/*"
-      ]
+      ],
+      "@app/auth":[
+        "libs/auth/src"
+      ],
+      "@app/auth/*":[
+        "libs/auth/src/*"
+      ],
     }
   }
 }
