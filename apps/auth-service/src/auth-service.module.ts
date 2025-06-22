@@ -4,14 +4,10 @@ import { AuthServiceService } from './auth-service.service';
 import { JwtModule } from '@nestjs/jwt';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GoogleStrategy } from './strategies/google.strategy';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { Transport } from '@nestjs/microservices';
 import { ClientsModule } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 import { PassportModule } from '@nestjs/passport';
-import { GoogleOAuthGuard } from './guards/google-oauth.guard';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { KafkaModule } from '@app/common';
 
 
@@ -59,11 +55,7 @@ import { KafkaModule } from '@app/common';
   ],
   controllers: [AuthServiceController],
   providers: [
-    AuthServiceService,
-    GoogleStrategy,
-    JwtStrategy,
-    GoogleOAuthGuard,
-    JwtAuthGuard,
+    AuthServiceService
   ],
 })
 export class AuthServiceModule { }

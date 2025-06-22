@@ -1,6 +1,8 @@
 import { UUID } from 'crypto';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany } from 'typeorm';
 import { SocialAccount } from './social-acc.entity';
+import { Shop } from 'apps/shop-service/src/entities/shop.entity';
+import { ShopMember } from 'apps/shop-service/src/entities/shop-member.entity';
 
 @Entity()
 export class User {
@@ -18,6 +20,9 @@ export class User {
 
   @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user, { cascade: true })
   socialAccounts: SocialAccount[];
+
+  @OneToMany(() => ShopMember, (shopMember) => shopMember.user, { cascade: true })
+  members: ShopMember[];
 
   connectSocialAccount({
     provider,

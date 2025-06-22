@@ -9,3 +9,6 @@ export * from './casl/policies.guard';
 export * from './types/policy-handler.type';
 export * from './types/User.type';
 export * from './kafka/kafka.module';
+export * from './decorators/get-user.decorator';
+export * from './decorators/get-user.decorator';
+export * from './types/shop-member-role.type';

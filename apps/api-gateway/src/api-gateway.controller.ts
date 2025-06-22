@@ -1,10 +1,13 @@
-import { Controller, Get, Inject, OnModuleInit, Param, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Inject, OnModuleInit, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { UUID } from 'crypto';
 import { firstValueFrom, lastValueFrom, Observable } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { User } from '@app/common';
+import { Shop } from 'apps/shop-service/src/entities/shop.entity';
+import { GoogleOAuthGuard, JwtAuthGuard } from '@app/auth';
+import { GetUser } from '@app/common';
 
 interface UserServiceGrpc {
   getUser(data: { id: UUID }): Observable<User>;
@@ -14,8 +17,12 @@ interface AuthServiceGrpc {
   GGLogin(data: { code: string }): Observable<{ accessToken: string, user: User }>;
 }
 
+interface ShopServiceGrpc {
+  createShop(data: { shop: Partial<Shop>, user: User }): Observable<Shop>;
+}
+
 @Controller('user')
-export class ApiGatewayController implements OnModuleInit {
+export class UserController implements OnModuleInit {
   private userService: UserServiceGrpc;
 
   constructor(@Inject('USER_SERVICE') private readonly client: ClientGrpc) { }
@@ -59,6 +66,23 @@ export class AuthController {
     );
     res.json({ access_token: result.accessToken?.toString(), user: result.user });
     return;
+  }
+}
+
+@Controller('shop')
+export class ShopController implements OnModuleInit {
+  private shopServiceGrpc: ShopServiceGrpc;
+
+  constructor(@Inject('SHOP_SERVICE') private readonly client: ClientGrpc) { }
+
+  onModuleInit() {
+    this.shopServiceGrpc = this.client.getService<ShopServiceGrpc>('ShopService');
+  }
+
+  @Post('')
+  @UseGuards(JwtAuthGuard)
+  async createShop(@Body() shop: Partial<Shop>, @GetUser() user: User) {
+    return firstValueFrom(this.shopServiceGrpc.createShop({ shop, user }));
   }
 }
 
