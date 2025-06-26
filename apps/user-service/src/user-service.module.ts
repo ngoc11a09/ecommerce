@@ -7,8 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CaslModule } from '@app/common/casl/casl.module';
 import { CaslAbilityFactory, PoliciesGuard } from '@app/common';
 import { SocialAccount } from './entities/social-acc.entity';
-import { Shop } from 'apps/shop-service/src/entities/shop.entity';
-import { ShopMember } from 'apps/shop-service/src/entities/shop-member.entity';
+import { ShopServiceModule } from 'apps/shop-service/src/shop-service.module';
 
 @Module({
   imports: [
@@ -24,10 +23,11 @@ import { ShopMember } from 'apps/shop-service/src/entities/shop-member.entity';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User, SocialAccount, Shop, ShopMember],
+      entities: [User, SocialAccount],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, SocialAccount, Shop, ShopMember]),
+    TypeOrmModule.forFeature([User, SocialAccount]),
+    ShopServiceModule
   ],
   controllers: [UserServiceController],
   providers: [UserServiceService, CaslAbilityFactory, PoliciesGuard],

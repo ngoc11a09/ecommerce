@@ -37,12 +37,21 @@ export class ShopServiceService {
     }
 
     const createdShop = await this.shopRepository.create({
-      ...newShop, members: [{
-        user: owner,
+      ...newShop,
+      members: [{
+        userId: owner.id,
+        shopId: newShop.id,
         role: ShopMemberRole.OWNER
       }]
     });
 
     return await this.shopRepository.save(createdShop);
+  }
+
+  async getShopMemberRole(userId: UUID, shopId: UUID): Promise<{ role: ShopMemberRole }> {
+    const shopMember = await this.shopMemberRepository.findOne({
+      where: { userId, shopId }
+    });
+    return { role: shopMember?.role as ShopMemberRole }
   }
 }

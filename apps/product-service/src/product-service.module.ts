@@ -1,32 +1,32 @@
 import { Module } from '@nestjs/common';
-import { ShopServiceController } from './shop-service.controller';
-import { ShopServiceService } from './shop-service.service';
-import { CaslModule, KafkaModule } from '@app/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ProductServiceController } from './product-service.controller';
+import { ProductServiceService } from './product-service.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Shop } from './entities/shop.entity';
-import { ShopMember } from './entities/shop-member.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { KafkaModule } from '@app/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { PoliciesGuard } from '@app/common/casl/policies.guard';
-import { CaslAbilityFactory } from '@app/common/casl/casl-ability.factory/casl-ability.factory';
+import { CaslModule } from '@app/common';
+import { Category } from './entities/category.entity';
+import { Variant } from './entities/variant.entity';
+import { Product } from './entities/product.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: 'apps/shop-service/.env',
+      envFilePath: 'apps/product-service/.env',
     }),
     KafkaModule,
     ClientsModule.registerAsync([
       {
-        name: 'SHOP_SERVICE',
+        name: 'PRODUCT_SERVICE',
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (configService: ConfigService) => ({
           transport: Transport.KAFKA,
           options: {
             client: {
-              clientId: configService.get('KAFKA_CLIENT_ID') || 'shop',
+              clientId: configService.get('KAFKA_CLIENT_ID') || 'product',
               brokers: [
                 configService.get<string>('KAFKA_BROKER') || 'localhost:9092',
               ],
@@ -34,7 +34,7 @@ import { CaslAbilityFactory } from '@app/common/casl/casl-ability.factory/casl-a
             consumer: {
               groupId:
                 configService.get('KAFKA_GROUP_ID') + Date.now() ||
-                'shop-consumer',
+                'product-consumer',
             },
           },
         }),
@@ -48,13 +48,13 @@ import { CaslAbilityFactory } from '@app/common/casl/casl-ability.factory/casl-a
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [Shop, ShopMember],
+      entities: [Category, Product, Variant],
       synchronize: true,
+      autoLoadEntities: true,
     }),
-    TypeOrmModule.forFeature([Shop, ShopMember]),
+    TypeOrmModule.forFeature([Category, Product, Variant]),
   ],
-  controllers: [ShopServiceController],
-  providers: [ShopServiceService, PoliciesGuard, CaslAbilityFactory],
-  exports: [ClientsModule],
+  controllers: [ProductServiceController],
+  providers: [ProductServiceService],
 })
-export class ShopServiceModule { }
+export class ProductServiceModule { }

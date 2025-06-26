@@ -4,6 +4,7 @@ package shop;
 
 service ShopService {
     rpc CreateShop(CreateShopRequest) returns (Shop);
+    rpc GetShopMemberRole(GetShopMemberRoleRequest) returns (ShopMember);
 }
 
 message User {
@@ -24,3 +25,14 @@ message CreateShopRequest {
     Shop shop = 1;
     User user = 2;
 }
+
+message GetShopMemberRoleRequest {
+    string userId = 1;
+    string shopId = 2;
+}
+
+message ShopMember {
+    string role = 1;
+}
+
+

@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { ShopServiceModule } from './shop-service.module';
-import { ConfigService } from '@nestjs/config';
+import { ProductServiceModule } from './product-service.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(ShopServiceModule);
+  const app = await NestFactory.create(ProductServiceModule);
   const configService = app.get(ConfigService);
 
   app.connectMicroservice<MicroserviceOptions>({
@@ -24,13 +24,13 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: 'shop',
-      protoPath: join(process.cwd(), 'apps/shop-service/proto/shop.proto'),
-      url: '0.0.0.0:50053',
+      package: 'product',
+      protoPath: join(process.cwd(), 'apps/product-service/proto/product.proto'),
+      url: '0.0.0.0:50054',
     },
   });
 
   await app.startAllMicroservices();
-  await app.listen(3003);
+  await app.listen(process.env.port ?? 3005);
 }
 bootstrap();

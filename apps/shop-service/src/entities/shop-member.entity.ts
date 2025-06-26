@@ -1,7 +1,6 @@
 // apps/shop-service/src/entities/shop-user.entity.ts
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, JoinColumn } from 'typeorm';
 import { Shop } from './shop.entity';
-import { User } from 'apps/user-service/src/entities/user.entity';
 import { UUID } from 'crypto';
 import { ShopMemberRole } from '@app/common';
 
@@ -10,11 +9,15 @@ export class ShopMember {
     @PrimaryGeneratedColumn('uuid')
     id: UUID;
 
-    @ManyToOne(() => Shop, shop => shop.members)
-    shop: Shop;
+    @Column({ type: 'uuid', nullable: false })
+    userId: string;
 
-    @ManyToOne(() => User, user => user.members)
-    user: User;
+    @Column({ type: 'uuid', nullable: false })
+    shopId: string;
+
+    @ManyToOne(() => Shop, shop => shop.members)
+    @JoinColumn({ name: 'shopId' })
+    shop: Shop;
 
     @Column({
         type: 'enum',

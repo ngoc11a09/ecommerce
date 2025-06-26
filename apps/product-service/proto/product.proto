@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package product;
+
+service ProductService {
+    rpc CreateCategory(CreateCategoryRequest) returns (Category);
+    rpc CreateProduct(CreateProductRequest) returns (Product);
+    rpc AdminCreateCategory(AdminCreateCategoryRequest) returns (Category);
+}
+
+message Category {
+    string id = 1;
+    string name = 2;
+    string shopId = 3;
+    string parentId = 4;
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  bool isAdmin = 3;
+}
+
+message CreateCategoryRequest {
+    Category category = 1;
+    User user = 2;
+}
+
+message Product {
+    string id = 1;
+    string name = 2;
+    double basePrice = 3;
+    string sku = 4;
+    string code = 5;
+}
+
+message CreateProductRequest {
+    Product product = 1;
+    User user = 2;
+}
+
+message AdminCreateCategoryRequest {
+    string name = 1;
+}

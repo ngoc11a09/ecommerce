@@ -21,9 +21,6 @@ export class User {
   @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user, { cascade: true })
   socialAccounts: SocialAccount[];
 
-  @OneToMany(() => ShopMember, (shopMember) => shopMember.user, { cascade: true })
-  members: ShopMember[];
-
   connectSocialAccount({
     provider,
     metadata,

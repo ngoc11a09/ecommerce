@@ -1,13 +1,17 @@
-import { Body, Controller, Get, Inject, OnModuleInit, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, OnModuleInit, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { UUID } from 'crypto';
 import { firstValueFrom, lastValueFrom, Observable } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { User } from '@app/common';
+import { Action, AppAbility, CheckPolicies, PoliciesGuard, User } from '@app/common';
 import { Shop } from 'apps/shop-service/src/entities/shop.entity';
-import { GoogleOAuthGuard, JwtAuthGuard } from '@app/auth';
+import { JwtAuthGuard } from '@app/auth';
 import { GetUser } from '@app/common';
+import { Category } from 'apps/product-service/src/entities/category.entity';
+import { Product } from 'apps/product-service/src/entities/product.entity';
+import { ShopMember } from 'apps/shop-service/src/entities/shop-member.entity';
+import { ShopPoliciesGuard } from './guards/shop-policies.guard';
 
 interface UserServiceGrpc {
   getUser(data: { id: UUID }): Observable<User>;
@@ -17,8 +21,15 @@ interface AuthServiceGrpc {
   GGLogin(data: { code: string }): Observable<{ accessToken: string, user: User }>;
 }
 
-interface ShopServiceGrpc {
+export interface ShopServiceGrpc {
   createShop(data: { shop: Partial<Shop>, user: User }): Observable<Shop>;
+  getShopMemberRole(data: { userId: UUID, shopId: UUID }): Observable<ShopMember>;
+}
+
+interface ProductServiceGrpc {
+  createCategory(data: { category: Partial<Category>, user: User }): Observable<Category>;
+  createProduct(data: { product: Partial<Product>, user: User, shopId: UUID }): Observable<Product>;
+  adminCreateCategory(data: { name: string }): Observable<Category>;
 }
 
 @Controller('user')
@@ -70,19 +81,65 @@ export class AuthController {
 }
 
 @Controller('shop')
+@UseGuards(JwtAuthGuard, ShopPoliciesGuard)
 export class ShopController implements OnModuleInit {
   private shopServiceGrpc: ShopServiceGrpc;
+  private productServiceGrpc: ProductServiceGrpc;
 
-  constructor(@Inject('SHOP_SERVICE') private readonly client: ClientGrpc) { }
+  constructor(
+    @Inject('SHOP_SERVICE') private readonly client: ClientGrpc,
+    @Inject('PRODUCT_SERVICE') private readonly productClient: ClientGrpc,
+  ) { }
 
   onModuleInit() {
     this.shopServiceGrpc = this.client.getService<ShopServiceGrpc>('ShopService');
+    this.productServiceGrpc = this.productClient.getService<ProductServiceGrpc>('ProductService');
   }
 
   @Post('')
-  @UseGuards(JwtAuthGuard)
   async createShop(@Body() shop: Partial<Shop>, @GetUser() user: User) {
     return firstValueFrom(this.shopServiceGrpc.createShop({ shop, user }));
   }
+
+  @Post(':shopId/product')
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, 'Product'))
+  async createProduct(
+    @Param('shopId') shopId: UUID,
+    @Body() data: { product: Partial<Product>, categoryId: UUID },
+    @GetUser() user: User
+  ) {
+    return firstValueFrom(this.productServiceGrpc.createProduct({ product: data.product, user, shopId }));
+  }
+
+  @Post(':shopId/category')
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, 'Category'))
+  async createCategory(
+    @Param('shopId') shopId: UUID,
+    @Body() category: Partial<Category>,
+    @GetUser() user: User
+  ) {
+    return firstValueFrom(this.productServiceGrpc.createCategory({ category: { ...category, shopId }, user }));
+  }
 }
+
+@Controller('product')
+@UseGuards(JwtAuthGuard, ShopPoliciesGuard)
+export class ProductController implements OnModuleInit {
+  private productServiceGrpc: ProductServiceGrpc;
+
+  constructor(
+    @Inject('PRODUCT_SERVICE') private readonly productClient: ClientGrpc,
+  ) { }
+
+  onModuleInit() {
+    this.productServiceGrpc = this.productClient.getService<ProductServiceGrpc>('ProductService');
+  }
+
+  @Post('category')
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, 'SuperCategory'))
+  async adminCreateCategory(@Body() category: { name: string }) {
+    return firstValueFrom(this.productServiceGrpc.adminCreateCategory(category));
+  }
+}
+
 
