@@ -1,5 +1,5 @@
 import { UUID } from "crypto";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Category } from "./category.entity";
 
 @Entity('product')
@@ -10,13 +10,11 @@ export class Product {
     @Column()
     name: string;
 
-    @Column()
-    basePrice: number;
+    @Column({ type: 'uuid' })
+    categoryId: UUID;
 
-    @Column({ unique: true })
-    cost: string;
-
-    @ManyToOne(() => Category, (category) => category.products)
+    @ManyToOne(() => Category, (category) => category.products, { onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'categoryId' })
     category: Category;
 
     // @OneToMany(() => Variant, (variant) => variant.product)

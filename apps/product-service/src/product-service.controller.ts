@@ -12,7 +12,6 @@ export class ProductServiceController {
 
   @GrpcMethod('ProductService', 'CreateCategory')
   createCategory(@Payload() data: { category: Partial<Category>, user: User }) {
-    console.log({ data });
     return this.productServiceService.createCategory(data.category, data.user);
   }
 

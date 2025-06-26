@@ -105,10 +105,10 @@ export class ShopController implements OnModuleInit {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, 'Product'))
   async createProduct(
     @Param('shopId') shopId: UUID,
-    @Body() data: { product: Partial<Product>, categoryId: UUID },
+    @Body() data: Partial<Product>,
     @GetUser() user: User
   ) {
-    return firstValueFrom(this.productServiceGrpc.createProduct({ product: data.product, user, shopId }));
+    return firstValueFrom(this.productServiceGrpc.createProduct({ product: data, user, shopId }));
   }
 
   @Post(':shopId/category')

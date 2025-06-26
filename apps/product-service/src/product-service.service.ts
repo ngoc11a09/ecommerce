@@ -38,9 +38,14 @@ export class ProductServiceService {
   }
 
   async createProduct(product: Partial<Product>, user: User, shopId: UUID) {
-    console.log({ product });
+    console.log({ product, user, shopId });
+    const category = await this.categoryRepository.findOne({ where: { id: product.categoryId } });
+
+    if (!category || (category.shopId !== null && category.shopId !== shopId)) {
+      throw new Error('Category not found');
+    }
+
     const newProduct = this.productRepository.create(product);
-    return newProduct;
-    // return this.productRepository.save(newProduct);
+    return this.productRepository.save(newProduct);
   }
 }
