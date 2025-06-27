@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Category } from './entities/category.entity';
 import { Repository } from 'typeorm';
-import { User } from '@app/common';
+import { BadRequestException, User } from '@app/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UUID } from 'crypto';
 import { Product } from './entities/product.entity';
@@ -17,11 +17,11 @@ export class ProductServiceService {
 
   async createCategory(category: Partial<Category>, user: User) {
     if (!category.parentId || !category.shopId) {
-      throw new Error('Parent category or shop id is required');
+      throw new BadRequestException('Parent category or shop id is required', "MISSING_ID_FIELD");
     }
     const parentCategory = await this.categoryRepository.findOne({ where: { id: category.parentId } });
     if (!parentCategory) {
-      throw new Error('Parent category not found');
+      throw new BadRequestException('Parent category not found', "CATEGORY_NOT_FOUND");
     }
     const newCategory = this.categoryRepository.create({ ...category, parent: parentCategory });
     return this.categoryRepository.save(newCategory);
@@ -42,7 +42,7 @@ export class ProductServiceService {
     const category = await this.categoryRepository.findOne({ where: { id: product.categoryId } });
 
     if (!category || (category.shopId !== null && category.shopId !== shopId)) {
-      throw new Error('Category not found');
+      throw new BadRequestException('Category not found', "CATEGORY_NOT_FOUND");
     }
 
     const newProduct = this.productRepository.create(product);

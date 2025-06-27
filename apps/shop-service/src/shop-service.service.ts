@@ -7,6 +7,7 @@ import { UUID } from 'crypto';
 import { firstValueFrom } from 'rxjs';
 import { ClientKafka } from '@nestjs/microservices';
 import { ShopMember } from './entities/shop-member.entity';
+import { BadRequestException } from '@app/common';
 
 @Injectable()
 export class ShopServiceService {
@@ -33,10 +34,10 @@ export class ShopServiceService {
     const shop = await this.shopRepository.findOne({ where: { email: newShop.email } });
 
     if (shop) {
-      throw new Error('Shop is already exists');
+      throw new BadRequestException('Shop is already exists', 'EMAIL_ALREADY_EXISTS');
     }
 
-    const createdShop = await this.shopRepository.create({
+    const createdShop = this.shopRepository.create({
       ...newShop,
       members: [{
         userId: owner.id,
@@ -45,7 +46,7 @@ export class ShopServiceService {
       }]
     });
 
-    return await this.shopRepository.save(createdShop);
+    return this.shopRepository.save(createdShop);
   }
 
   async getShopMemberRole(userId: UUID, shopId: UUID): Promise<{ role: ShopMemberRole }> {

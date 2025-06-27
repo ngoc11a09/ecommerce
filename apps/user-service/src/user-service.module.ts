@@ -8,6 +8,8 @@ import { CaslModule } from '@app/common/casl/casl.module';
 import { CaslAbilityFactory, PoliciesGuard } from '@app/common';
 import { SocialAccount } from './entities/social-acc.entity';
 import { ShopServiceModule } from 'apps/shop-service/src/shop-service.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { GrpcErrorInterceptor } from '@app/common';
 
 @Module({
   imports: [
@@ -30,6 +32,14 @@ import { ShopServiceModule } from 'apps/shop-service/src/shop-service.module';
     ShopServiceModule
   ],
   controllers: [UserServiceController],
-  providers: [UserServiceService, CaslAbilityFactory, PoliciesGuard],
+  providers: [
+    UserServiceService,
+    CaslAbilityFactory,
+    PoliciesGuard,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: GrpcErrorInterceptor,
+    },
+  ],
 })
 export class UserServiceModule { }

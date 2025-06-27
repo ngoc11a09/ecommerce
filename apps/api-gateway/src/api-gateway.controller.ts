@@ -19,6 +19,7 @@ interface UserServiceGrpc {
 
 interface AuthServiceGrpc {
   GGLogin(data: { code: string }): Observable<{ accessToken: string, user: User }>;
+  AdminLogin(data: { email: string; password: string }): Observable<{ accessToken: string, user: User }>;
 }
 
 export interface ShopServiceGrpc {
@@ -77,6 +78,11 @@ export class AuthController {
     );
     res.json({ access_token: result.accessToken?.toString(), user: result.user });
     return;
+  }
+
+  @Post('admin-login')
+  async adminLogin(@Body() body: { email: string; password: string }) {
+    return firstValueFrom(this.authServiceGrpc.AdminLogin(body));
   }
 }
 

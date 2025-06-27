@@ -1,7 +1,7 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ClientKafka } from '@nestjs/microservices';
-import { User } from '@app/common';
+import { BadRequestException, User } from '@app/common';
 import { randomUUID } from 'crypto';
 import { firstValueFrom } from 'rxjs';
 import * as bcrypt from 'bcrypt';
@@ -37,7 +37,7 @@ export class AuthServiceService implements OnModuleInit {
 
   async loginWithGoogle(ggUser) {
     if (!ggUser) {
-      throw new Error('User not found');
+      throw new BadRequestException('User not found', 'USER_NOT_FOUND');
     }
 
     const data = await firstValueFrom(
@@ -83,12 +83,12 @@ export class AuthServiceService implements OnModuleInit {
   async loginWithAdmin(body: { email: string; password: string }) {
     const user = await this.findUser(body.email);
     if (!user || !user.password) {
-      throw new Error('Invalid credentials');
+      throw new BadRequestException('Invalid credentials', 'INVALID_CREDENTIALS');
     }
 
     const isPasswordValid = await bcrypt.compare(body.password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new BadRequestException('Invalid credentials', 'INVALID_CREDENTIALS');
     }
 
     const payload = this.getPayload(user);

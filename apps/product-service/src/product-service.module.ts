@@ -9,6 +9,8 @@ import { CaslModule } from '@app/common';
 import { Category } from './entities/category.entity';
 import { Variant } from './entities/variant.entity';
 import { Product } from './entities/product.entity';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { GrpcErrorInterceptor } from '@app/common';
 
 @Module({
   imports: [
@@ -55,6 +57,12 @@ import { Product } from './entities/product.entity';
     TypeOrmModule.forFeature([Category, Product, Variant]),
   ],
   controllers: [ProductServiceController],
-  providers: [ProductServiceService],
+  providers: [
+    ProductServiceService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: GrpcErrorInterceptor,
+    },
+  ],
 })
 export class ProductServiceModule { }

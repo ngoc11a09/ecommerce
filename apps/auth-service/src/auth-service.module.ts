@@ -9,6 +9,8 @@ import { ClientsModule } from '@nestjs/microservices';
 import { Partitioners } from 'kafkajs';
 import { PassportModule } from '@nestjs/passport';
 import { KafkaModule } from '@app/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { GrpcErrorInterceptor } from '@app/common';
 
 
 @Module({
@@ -55,7 +57,11 @@ import { KafkaModule } from '@app/common';
   ],
   controllers: [AuthServiceController],
   providers: [
-    AuthServiceService
+    AuthServiceService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: GrpcErrorInterceptor,
+    },
   ],
 })
 export class AuthServiceModule { }

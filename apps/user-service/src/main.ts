@@ -4,9 +4,12 @@ import { MicroserviceOptions } from '@nestjs/microservices';
 import { Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { GlobalExceptionFilter } from '@app/common';
 async function bootstrap() {
   const app = await NestFactory.create(UserServiceModule);
   const configService = app.get(ConfigService);
+
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
@@ -31,6 +34,6 @@ async function bootstrap() {
   });
 
   await app.startAllMicroservices();
-  await app.listen(process.env.port ?? 3002);
+  await app.listen(3002);
 }
 bootstrap();

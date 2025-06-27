@@ -4,6 +4,7 @@ package auth;
 
 service AuthService {
   rpc GGLogin(GGLoginRequest) returns (GGLoginResponse);
+  rpc AdminLogin(AdminLoginRequest) returns (AdminLoginResponse);
 }
 
 message User {
@@ -17,6 +18,16 @@ message GGLoginRequest {
 }
 
 message GGLoginResponse {
+  string accessToken = 1;
+  User user = 2;
+}
+
+message AdminLoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AdminLoginResponse {
   string accessToken = 1;
   User user = 2;
 }

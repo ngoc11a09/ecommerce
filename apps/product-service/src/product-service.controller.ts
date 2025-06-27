@@ -1,12 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, UseInterceptors } from '@nestjs/common';
 import { ProductServiceService } from './product-service.service';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { Category } from './entities/category.entity';
-import { User } from '@app/common';
+import { GrpcErrorInterceptor, User } from '@app/common';
 import { UUID } from 'crypto';
 import { Product } from './entities/product.entity';
 
 @Controller()
+@UseInterceptors(GrpcErrorInterceptor)
 export class ProductServiceController {
   constructor(private readonly productServiceService: ProductServiceService) { }
 

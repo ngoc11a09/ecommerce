@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { BadRequestException } from '@app/common';
 
 @Injectable()
 export class UserServiceService {
@@ -48,7 +49,7 @@ export class UserServiceService {
     }
 
     if (Object.keys(where).length === 0) {
-      throw new BadRequestException('At least one query field is required');
+      throw new BadRequestException('At least one query field is required', 'BAD_REQUEST');
     }
 
     return this.userRepository.findOne({ where });

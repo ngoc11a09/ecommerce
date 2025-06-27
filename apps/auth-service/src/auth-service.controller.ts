@@ -1,21 +1,27 @@
 import {
-  Body, Controller, Post
+  Body, Controller, UseInterceptors
 } from '@nestjs/common';
 import { AuthServiceService } from './auth-service.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import { google } from 'googleapis';
 import { ConfigService } from '@nestjs/config';
+import { GrpcErrorInterceptor } from '@app/common';
 
-@Controller('auth')
+@Controller()
+@UseInterceptors(GrpcErrorInterceptor)
 export class AuthServiceController {
   constructor(
     private authService: AuthServiceService,
     private readonly configService: ConfigService,
   ) { }
 
-  @Post('admin-login')
+  @GrpcMethod('AuthService', 'AdminLogin')
   async adminLogin(@Body() body: { email: string; password: string }) {
-    return this.authService.loginWithAdmin(body);
+    const res = await this.authService.loginWithAdmin(body);
+    return {
+      accessToken: res.access_token,
+      user: res.user
+    };
   }
 
   @GrpcMethod('AuthService', 'GGLogin')

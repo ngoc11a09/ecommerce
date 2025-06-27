@@ -12,3 +12,6 @@ export * from './kafka/kafka.module';
 export * from './decorators/get-user.decorator';
 export * from './decorators/get-user.decorator';
 export * from './types/shop-member-role.type';
+export * from './exceptions/global-exception.filter';
+export * from './exceptions/custom.exceptions';
+export * from './interceptors/grpc-error.interceptor';

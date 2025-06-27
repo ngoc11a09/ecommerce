@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ShopServiceController } from './shop-service.controller';
 import { ShopServiceService } from './shop-service.service';
-import { CaslModule, KafkaModule } from '@app/common';
+import { CaslModule, GrpcErrorInterceptor, KafkaModule } from '@app/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Shop } from './entities/shop.entity';
@@ -9,6 +9,7 @@ import { ShopMember } from './entities/shop-member.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PoliciesGuard } from '@app/common/casl/policies.guard';
 import { CaslAbilityFactory } from '@app/common/casl/casl-ability.factory/casl-ability.factory';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -54,7 +55,15 @@ import { CaslAbilityFactory } from '@app/common/casl/casl-ability.factory/casl-a
     TypeOrmModule.forFeature([Shop, ShopMember]),
   ],
   controllers: [ShopServiceController],
-  providers: [ShopServiceService, PoliciesGuard, CaslAbilityFactory],
+  providers: [
+    ShopServiceService,
+    PoliciesGuard,
+    CaslAbilityFactory,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: GrpcErrorInterceptor,
+    },
+  ],
   exports: [ClientsModule],
 })
 export class ShopServiceModule { }
